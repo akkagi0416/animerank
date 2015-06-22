@@ -2,10 +2,6 @@
 require_once( 'twitteroauth/autoload.php' );
 use Abraham\TwitterOAuth\TwitterOAuth;
 
-// $consumerKey        = '';
-// $consumerSecret     = '';
-// $accessToken        = '';
-// $accessTokenSecret  = '';
 $keytoken = json_decode( file_get_contents( 'keytoken.json' ), true );
 $consumerKey        = $keytoken['consumerKey'];
 $consumerSecret     = $keytoken['consumerSecret'];
@@ -31,12 +27,6 @@ class Animerank
     }
 }
 
-/*
- * Mvnoのデータベースを扱う
- * $m = new Mvno();
- * $results = $m->getInfo( 'dmm' );
- * $results['shortname'] -> 'dmm';
- */
 class AnimerankDB
 {
     private $db;
@@ -66,50 +56,55 @@ class AnimerankDB
         try{
             $stmt = $this->db->query( $sql );
             $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
-            // $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
         }catch( PDOException $e ){
-            die( 'getInfo error' . $e->getMessage() );
+            die( 'getList error' . $e->getMessage() );
         }
 
         return $results;
     }
-    function getPlan( $shortname )
+    function putData( $screen_name, $followers_count )
     {
-        $sql = 'SELECT * FROM mvno_plan WHERE shortname = :shortname ORDER BY id_plan ASC';
+        $sql = 'INSERT INTO anime_log VALUES( :screen_name, :date, :followers_count)';
         $stmt = $this->db->prepare( $sql );
-        $stmt->bindValue( ':shortname', $shortname, PDO::PARAM_STR );
-        
+        $stmt->bindValue( ':screen_name', $screen_name, PDO::PARAM_STR );
+        $stmt->bindValue( ':date', date( 'Y-m-d H:i:s' ), PDO::PARAM_STR );
+        $stmt->bindValue( ':followers_count', $followers_count, PDO::PARAM_INT );
+
         try{
             $stmt->execute();
-            // $result = $stmt->fetch( PDO::FETCH_ASSOC );
-            $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
         }catch( PDOException $e ){
-            die( 'getInfo error' . $e->getMessage() );
+            die( 'putData error' . $e->getMessage() );
         }
-        
-        // return $result;
-        return $results;
     }
 }
 
-// $a = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
-// echo $a->getFollowersCount( 'akkagi0416' );
-
-// $list = ['akkagi0416', 'anime_okusama'];
-// foreach( $list as $title ){
-//     echo $title . "\t" . $a->getFollowersCount( $title ) . "\n";
-// }
 
 $a  = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
 $db = new AnimerankDB();
 $lists = $db->getList();
 
-// var_dump( $list );
 $i = 0;
 foreach( $lists as $title ){
-    if( $i >= 3 ){
-        exit();
+    // if( $i >= 3 ){
+    //     exit();
+    // }
+    // echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
+    $sn = $title['screen_name'];
+    if( !empty( $sn ) ){
+        $db->putData( $sn, $a->getFollowersCount( $sn ) );
     }
-    echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
     $i = $i + 1;
+    echo $i;
 }
+
+?>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>2015夏アニメ前評判ランキング</title>
+</head>
+<body>
+    
+</body>
+</html>
