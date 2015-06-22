@@ -62,6 +62,19 @@ class AnimerankDB
 
         return $results;
     }
+    function getRank()
+    {
+        $sql = 'select l.title, d.screen_name, d.followers_count from anime_log d inner join anime_list l on l.screen_name=d.screen_name order by d.followers_count desc;';
+
+        try{
+            $stmt = $this->db->query( $sql );
+            $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+        }catch( PDOException $e ){
+            die( 'getList error' . $e->getMessage() );
+        }
+
+        return $results;
+    }
     function putData( $screen_name, $followers_count )
     {
         $sql = 'INSERT INTO anime_log VALUES( :screen_name, :date, :followers_count)';
@@ -79,23 +92,23 @@ class AnimerankDB
 }
 
 
-$a  = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
+// $a  = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
 $db = new AnimerankDB();
-$lists = $db->getList();
-
-$i = 0;
-foreach( $lists as $title ){
-    // if( $i >= 3 ){
-    //     exit();
-    // }
-    // echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
-    $sn = $title['screen_name'];
-    if( !empty( $sn ) ){
-        $db->putData( $sn, $a->getFollowersCount( $sn ) );
-    }
-    $i = $i + 1;
-    echo $i;
-}
+// $lists = $db->getList();
+//
+// $i = 0;
+// foreach( $lists as $title ){
+//     // if( $i >= 3 ){
+//     //     exit();
+//     // }
+//     // echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
+//     $sn = $title['screen_name'];
+//     if( !empty( $sn ) ){
+//         $db->putData( $sn, $a->getFollowersCount( $sn ) );
+//     }
+//     $i = $i + 1;
+//     echo $i;
+// }
 
 ?>
 <!DOCTYPE html>
@@ -103,8 +116,41 @@ foreach( $lists as $title ){
 <head>
     <meta charset="UTF-8">
     <title>2015夏アニメ前評判ランキング</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 </head>
 <body>
-    
+    <header>
+        <div class="navbar navbar-default">
+            <div class="container">
+            <!--<div class="container-fluid">-->
+                <a class="navbar-brand" href="#">Brand</a>
+                <p class="navbar-text">2015夏アニメ前評判ランキング</p>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+    </div>
+    <div class="container">
+        <div class="row">
+<?php
+    $results = $db->getRank();
+
+    $html = '';
+    foreach( $results as $title ){
+            $html .= '<div class="col-md-2">
+                <div class="thumbnail">
+                    <img src="http://lorempixel.com/200/200/" alt="" class="img-responsive">';
+            $html .= '<h3>' . $title['title'] . '</h3>';
+            $html .= '<p>'  . $title['followers_count'] . '</p>';
+            $html .= '
+                </div>
+            </div>';
+    }
+    echo $html;
+?>
+        </div><!-- //.row -->
+    </div>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </body>
 </html>
