@@ -12,18 +12,6 @@ $consumerSecret     = $keytoken['consumerSecret'];
 $accessToken        = $keytoken['accessToken'];
 $accessTokenSecret  = $keytoken['accessTokenSecret'];
 
-// $connection = new TwitterOAuth( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
-
-// $api = 'users/show';
-// $content = $connection->get( $api, array(
-//     'screen_name' => 'akkagi0416',
-// ) );
-
-// echo $content->{'statuses_count'};  // ツイート数
-// echo $content->{'friends_count'};   // フォロー数
-// echo $content->{'followers_count'}; // フォロワー数
-// var_dump( $content );
-
 class Animerank
 {
     private $connection;
@@ -36,12 +24,92 @@ class Animerank
     {
         $api = 'users/show';
         $userinfo = $this->connection->get( $api, array(
-            'screen_name' => 'akkagi0416',
+            'screen_name' => $screen_name,
         ) );
         // var_dump( $userinfo );
         return $userinfo->{'followers_count'}; 
     }
 }
 
-$a = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
-echo $a->getFollowersCount( 'akkagi0416' );
+/*
+ * Mvnoのデータベースを扱う
+ * $m = new Mvno();
+ * $results = $m->getInfo( 'dmm' );
+ * $results['shortname'] -> 'dmm';
+ */
+class AnimerankDB
+{
+    private $db;
+
+    function __construct()
+    {
+        // $dbname = 'sqlite:/var/www/animerank/2015summer/animerank.db';
+        $dbname = 'sqlite:animerank.db';
+
+        try{
+            $this->db = new PDO( $dbname );
+            $this->db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+        }catch( PDOException $e ){
+            die( 'DB connect error:' . $e->getMessage() );
+        }
+    }
+
+    function __destruct()
+    {
+        $this->db = null;
+    }
+
+    function getList()
+    {
+        $sql = 'SELECT screen_name FROM anime_list';
+
+        try{
+            $stmt = $this->db->query( $sql );
+            $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+            // $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+        }catch( PDOException $e ){
+            die( 'getInfo error' . $e->getMessage() );
+        }
+
+        return $results;
+    }
+    function getPlan( $shortname )
+    {
+        $sql = 'SELECT * FROM mvno_plan WHERE shortname = :shortname ORDER BY id_plan ASC';
+        $stmt = $this->db->prepare( $sql );
+        $stmt->bindValue( ':shortname', $shortname, PDO::PARAM_STR );
+        
+        try{
+            $stmt->execute();
+            // $result = $stmt->fetch( PDO::FETCH_ASSOC );
+            $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+        }catch( PDOException $e ){
+            die( 'getInfo error' . $e->getMessage() );
+        }
+        
+        // return $result;
+        return $results;
+    }
+}
+
+// $a = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
+// echo $a->getFollowersCount( 'akkagi0416' );
+
+// $list = ['akkagi0416', 'anime_okusama'];
+// foreach( $list as $title ){
+//     echo $title . "\t" . $a->getFollowersCount( $title ) . "\n";
+// }
+
+$a  = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
+$db = new AnimerankDB();
+$lists = $db->getList();
+
+// var_dump( $list );
+$i = 0;
+foreach( $lists as $title ){
+    if( $i >= 3 ){
+        exit();
+    }
+    echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
+    $i = $i + 1;
+}
