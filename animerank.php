@@ -64,7 +64,7 @@ class AnimerankDB
     }
     function getRank()
     {
-        $sql = 'select l.title, d.screen_name, d.followers_count from anime_log d inner join anime_list l on l.screen_name=d.screen_name order by d.followers_count desc;';
+        $sql = 'select l.title, l.url,d.screen_name, d.followers_count from anime_log d inner join anime_list l on l.screen_name=d.screen_name order by d.followers_count desc;';
 
         try{
             $stmt = $this->db->query( $sql );
@@ -135,17 +135,30 @@ $db = new AnimerankDB();
 <?php
     $results = $db->getRank();
 
-    $html = '';
+    // $html = '';
+    // foreach( $results as $title ){
+    //         $html .= '<div class="col-md-2">
+    //             <div class="thumbnail">
+    //                 <img src="http://lorempixel.com/200/200/" alt="" class="img-responsive">';
+    //         $html .= '<h3>' . $title['title'] . '</h3>';
+    //         $html .= '<p>'  . $title['followers_count'] . '</p>';
+    //         $html .= '
+    //             </div>
+    //         </div>';
+    // }
+    // echo $html;
+    $html = '<table class="table">';
+    $html .= '<tr><th>順位</th><th>タイトル</th><th>twitterフォロワー数</th></tr>';
+    $i = 0;
     foreach( $results as $title ){
-            $html .= '<div class="col-md-2">
-                <div class="thumbnail">
-                    <img src="http://lorempixel.com/200/200/" alt="" class="img-responsive">';
-            $html .= '<h3>' . $title['title'] . '</h3>';
-            $html .= '<p>'  . $title['followers_count'] . '</p>';
-            $html .= '
-                </div>
-            </div>';
+        $html .= '<tr>'; 
+        $html .= '<td>' . strval( $i + 1 ) . '</td>'; 
+        $html .= '<td><a href="' . $title['url'] . '">' . $title['title']. '</a></td>'; 
+        $html .= '<td>' . $title['followers_count']  . '</td>'; 
+        $html .= '</tr>'; 
+        $i = $i + 1;
     }
+    $html .= '</table>';
     echo $html;
 ?>
         </div><!-- //.row -->
