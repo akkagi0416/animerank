@@ -54,6 +54,48 @@ class AnimerankDB
 
         return $results;
     }
+
+    function getRank2()
+    {
+        $result1 = $this->getData( "2015-06-22" );
+        $result2 = $this->getData( date( "Y-m-d" ) );
+
+        if( count( $result1 ) != count( $result2 ) ){
+            die( 'error: database array size different' );
+        }
+        // フォロワー数の増加量計算
+        for( $i = 0; $i < count( $result1 ); $i++ ){
+            $increment = $result2[$i]['followers_count'] - $result1[$i]['followers_count'];
+            $result2[$i]['followers_count'] = $increment;
+        }
+        // フォロワー数の多い順にソート
+        $followers_count = array();
+        foreach( $result2 as $v ) $followers_count[] = $v['followers_count'];
+        array_multisort( $followers_count, SORT_DESC, SORT_NUMERIC, $result2 );
+
+        return $result2;
+    }
+
+    private function getData( $str_date )
+    {
+        $sql = 'SELECT l.title, l.url,d.screen_name, d.followers_count
+                FROM anime_log d
+                INNER JOIN anime_list l ON l.screen_name=d.screen_name
+                WHERE d.date >= :date_start AND d.date < :date_end
+                ORDER BY l.id ASC;';
+
+        $stmt = $this->db->prepare( $sql );
+        $stmt->bindValue( ':date_start', $str_date, PDO::PARAM_STR );
+        $stmt->bindValue( ':date_end'  , date( "Y-m-d", strtotime( $str_date . " +1 days" ) ), PDO::PARAM_STR );
+        try{
+            $stmt->execute();
+            $results = $stmt->fetchAll( PDO::FETCH_ASSOC );
+        }catch( PDOException $e ){
+            die( 'getList error' . $e->getMessage() );
+        }
+        return $results;
+    }
+
     function putData( $screen_name, $followers_count )
     {
         $sql = 'INSERT INTO anime_log VALUES( :screen_name, :date, :followers_count)';
@@ -70,24 +112,7 @@ class AnimerankDB
     }
 }
 
-
-// $a  = new Animerank( $consumerKey, $consumerSecret, $accessToken, $accessTokenSecret );
 $db = new AnimerankDB();
-// $lists = $db->getList();
-//
-// $i = 0;
-// foreach( $lists as $title ){
-//     // if( $i >= 3 ){
-//     //     exit();
-//     // }
-//     // echo $title['screen_name'] . ":" . $a->getFollowersCount( $title['screen_name'] ) . "<br>";
-//     $sn = $title['screen_name'];
-//     if( !empty( $sn ) ){
-//         $db->putData( $sn, $a->getFollowersCount( $sn ) );
-//     }
-//     $i = $i + 1;
-//     echo $i;
-// }
 
 ?>
 <!DOCTYPE html>
@@ -113,7 +138,7 @@ $db = new AnimerankDB();
             <div class="container">
             <!--<div class="container-fluid">-->
                 <a class="navbar-brand" href="#">Brand</a>
-                <p class="navbar-text">2015夏アニメ前評判ランキング</p>
+                <p class="navbar-text">2015夏アニメ前評判ランキング(増加数版)</p>
             </div>
         </div>
     </header>
@@ -130,20 +155,9 @@ $db = new AnimerankDB();
 </script>
         <div class="row">
 <?php
-    $results = $db->getRank();
-
-    // $html = '';
-    // foreach( $results as $title ){
-    //         $html .= '<div class="col-md-2">
-    //             <div class="thumbnail">
-    //                 <img src="http://lorempixel.com/200/200/" alt="" class="img-responsive">';
-    //         $html .= '<h3>' . $title['title'] . '</h3>';
-    //         $html .= '<p>'  . $title['followers_count'] . '</p>';
-    //         $html .= '
-    //             </div>
-    //         </div>';
-    // }
-    // echo $html;
+    // $results = $db->getRank();
+    $results = $db->getRank2();
+    
     $html = '<table class="table">';
     $html .= '<tr><th>順位</th><th>タイトル</th><th>twitterフォロワー数</th></tr>';
     $i = 0;
@@ -157,6 +171,7 @@ $db = new AnimerankDB();
     }
     $html .= '</table>';
     echo $html;
+
 ?>
         </div><!-- //.row -->
     </div>
