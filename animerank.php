@@ -1,12 +1,12 @@
 <?php
-require_once( 'twitteroauth/autoload.php' );
-use Abraham\TwitterOAuth\TwitterOAuth;
-
-$keytoken = json_decode( file_get_contents( 'keytoken.json' ), true );
-$consumerKey        = $keytoken['consumerKey'];
-$consumerSecret     = $keytoken['consumerSecret'];
-$accessToken        = $keytoken['accessToken'];
-$accessTokenSecret  = $keytoken['accessTokenSecret'];
+// require_once( 'twitteroauth/autoload.php' );
+// use Abraham\TwitterOAuth\TwitterOAuth;
+//
+// $keytoken = json_decode( file_get_contents( 'keytoken.json' ), true );
+// $consumerKey        = $keytoken['consumerKey'];
+// $consumerSecret     = $keytoken['consumerSecret'];
+// $accessToken        = $keytoken['accessToken'];
+// $accessTokenSecret  = $keytoken['accessTokenSecret'];
 
 class Animerank
 {
@@ -64,7 +64,13 @@ class AnimerankDB
     }
     function getRank()
     {
-        $sql = 'select l.title, l.url,d.screen_name, d.followers_count from anime_log d inner join anime_list l on l.screen_name=d.screen_name order by d.followers_count desc;';
+        // $sql = 'select l.title, l.url,d.screen_name, d.followers_count from anime_log d inner join anime_list l on l.screen_name=d.screen_name order by d.followers_count desc;';
+        // 2015夏アニメ前評判 専用sql(日付指定)
+        $sql = 'SELECT l.title, l.url,d.screen_name, d.followers_count
+                FROM anime_log d
+                INNER JOIN anime_list l ON l.screen_name=d.screen_name
+                WHERE d.date >= "2015-06-22" AND d.date < "2015-06-23"
+                ORDER BY d.followers_count DESC;';
 
         try{
             $stmt = $this->db->query( $sql );
@@ -117,6 +123,16 @@ $db = new AnimerankDB();
     <meta charset="UTF-8">
     <title>2015夏アニメ前評判ランキング</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-54272662-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </head>
 <body>
     <header>
@@ -129,8 +145,16 @@ $db = new AnimerankDB();
         </div>
     </header>
     <div class="container">
-    </div>
-    <div class="container">
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- g_001 -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-6018661257488318"
+     data-ad-slot="3597685782"
+     data-ad-format="auto"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
         <div class="row">
 <?php
     $results = $db->getRank();
