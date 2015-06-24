@@ -34,7 +34,7 @@ class AnimerankDB
     function __construct()
     {
         // $dbname = 'sqlite:/var/www/animerank/2015summer/animerank.db';
-        $dbname = 'sqlite:animerank.db';
+        $dbname = 'sqlite:' . __DIR__ . '/animerank.db';
 
         try{
             $this->db = new PDO( $dbname );
@@ -120,9 +120,11 @@ foreach( $lists as $title ){
     //     exit();
     // }
     $sn = $title['screen_name'];
-    echo strval( $i + 1 ) . " " . $sn . "<br>";
+    $fc = $a->getFollowersCount( $sn );
+    echo strval( $i + 1 ) . " " . $sn . "<br>\n";
     if( !empty( $sn ) ){
-        $db->putData( $sn, $a->getFollowersCount( $sn ) );
+        $db->putData( $sn, $fc );
+        echo strval( $i + 1 ) . " " . $sn . " " . $fc . "<br>\n";
     }
     $i = $i + 1;
 }
