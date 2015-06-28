@@ -119,7 +119,7 @@ $db = new AnimerankDB();
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>2015夏アニメ前評判ランキング</title>
+    <title>2015夏アニメ前評判ランキング(増加数版)</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -138,7 +138,7 @@ $db = new AnimerankDB();
             <div class="container">
             <!--<div class="container-fluid">-->
                 <a class="navbar-brand" href="#">Brand</a>
-                <p class="navbar-text">2015夏アニメ前評判ランキング(増加数版)</p>
+                <p class="navbar-text">2015夏アニメ前評判ランキング(増加数版) 06/23 ～ <?php echo date( 'm/d' ); ?>まで</p>
             </div>
         </div>
     </header>

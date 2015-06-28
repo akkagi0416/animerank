@@ -120,6 +120,7 @@ foreach( $lists as $title ){
     //     exit();
     // }
     $sn = $title['screen_name'];
+    if( empty( $sn ) ) continue;
     $fc = $a->getFollowersCount( $sn );
     echo strval( $i + 1 ) . " " . $sn . "<br>\n";
     if( !empty( $sn ) ){
